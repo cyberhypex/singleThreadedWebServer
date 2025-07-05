@@ -1,38 +1,41 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.net.Socket;
+import java.net.UnknownHostException;
+
 public class Server {
-    public static void run() {
-        int port = 8010; //defining a port number
-        ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(port);
-        } catch (Exception e) {
-            System.err.println("Failed to start port:"+port);
-            System.err.println("Reason:"+e.getMessage());
-            e.printStackTrace();
-        }
-        try {
-            socket.setSoTimeout(10000);
-        } catch (SocketException e) {
-            System.err.println("Connection establishment took longer than expected");
-            System.err.println("Reason:"+e.getCause());
-            System.out.println("Here failed");
-            e.printStackTrace();
-        }
-        while (true) {
-            try {
-                System.out.println("Server is listening on port" + port);
-                Socket acceptedConnection = socket.accept();
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Failed");
-            }
+
+    public void run() throws IOException, UnknownHostException{
+        int port = 8010;
+        ServerSocket socket = new ServerSocket(port);
+        socket.setSoTimeout(20000);
+        while(true){
+            System.out.println("Server is listening on port: "+port);
+            Socket acceptedConnection = socket.accept();
+            System.out.println("Connected to "+acceptedConnection.getRemoteSocketAddress());
+            PrintWriter toClient = new PrintWriter(acceptedConnection.getOutputStream(), true);
+            BufferedReader fromClient = new BufferedReader(new InputStreamReader(acceptedConnection.getInputStream()));
+            toClient.println("Hello World from the server");
+
+            toClient.close();
+            fromClient.close();
+            acceptedConnection.close();
+
         }
 
     }
-    public static void main(String[] args) {
-        run();
+
+
+    public static void main(String[] args){
+        Server server = new Server();
+        try{
+            server.run();
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
+
 }
